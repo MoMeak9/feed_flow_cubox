@@ -1,0 +1,50 @@
+{
+  "name": "feed_flow_cubox",
+  "version": "1.0.0",
+  "description": "基于cubox开放api的自动化rss订阅脚本",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "tsc --noEmit && rollup -c -w",
+    "build": "tsc --noEmit --noEmitOnError && rollup -c",
+    "commit": "git add . && git-cz && git push"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoMeak9/feed_flow_cubox.git"
+  },
+  "author": "",
+  "type": "module",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MoMeak9/feed_flow_cubox/issues"
+  },
+  "homepage": "https://github.com/MoMeak9/feed_flow_cubox#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.3",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@rollup/plugin-typescript": "^11.1.2",
+    "@types/dotenv": "^8.2.0",
+    "@types/xml2js": "^0.4.11",
+    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/parser": "^6.3.0",
+    "eslint": "^8.47.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "nodemon": "^3.0.1",
+    "prettier": "^2.8.8",
+    "rollup": "^3.28.0",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.6.1",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "dotenv": "^16.1.4",
+    "mysql": "^2.18.1",
+    "node-fetch": "^3.3.1",
+    "opml": "^0.5.1",
+    "rss-parser": "^3.13.0",
+    "typeorm": "^0.3.16",
+    "xml-reader": "^2.4.3"
+  }
+}
