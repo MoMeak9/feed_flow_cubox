@@ -12,19 +12,16 @@ export default {
             declarationDir: 'dist/types',
         }),
         nodeResolve({
-            exportConditions: ['node'],
             preferBuiltins: true,
-            dedupe: ['xml-reader']
         }),
         commonjs(),
         json(),
     ],
     output: [
         {
-            file: 'dist/index.js',
+            file: 'dist/index.cjs',
             format: 'cjs',
             sourcemap: true,
         },
     ],
-    external: ['xmlbuilder'],
 };

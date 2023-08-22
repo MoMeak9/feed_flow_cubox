@@ -6,7 +6,7 @@ const parser = new Parser({
 });
 
 // 数据库服务
-const {SubscriptionService, dataSource} = require('./subscription.service');
+import {SubscriptionService, dataSource} from './DB/subscription.service';
 const subscriptionService = new SubscriptionService();
 
 

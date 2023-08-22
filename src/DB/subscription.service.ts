@@ -1,7 +1,9 @@
 import typeorm from 'typeorm'
-require('dotenv').config();
+require('dotenv').config({
+    path: '../../.env'
+});
 
-const dataSource = new typeorm.DataSource({
+export const dataSource = new typeorm.DataSource({
     url: process.env.DATABASE_URL || 'mysql://root:root@localhost:3306/test',
     type: 'mysql',
     synchronize: true,
@@ -16,7 +18,8 @@ const dataSource = new typeorm.DataSource({
     }
 });
 
-class SubscriptionService {
+export class SubscriptionService {
+    repository: any
     constructor() {
         this.repository = dataSource.getRepository("Subscription");
     }
@@ -37,8 +40,3 @@ class SubscriptionService {
         });
     }
 }
-
-module.exports = {
-    SubscriptionService,
-    dataSource,
-};
