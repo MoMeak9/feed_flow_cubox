@@ -78,6 +78,10 @@ async function getFeedContent({xmlUrl, title, category, type}: IFeedContent): Pr
         console.log('=====================');
         console.error(error(`${title} Error:\n`), e.message);
         console.log('=====================');
+        if (e.message.includes('Cubox error')) {
+            console.log(error('超出Cubox限制，程序退出'))
+            process.exit(1);
+        }
         return Promise.reject('Error' + e.message);
     }
 }
@@ -106,8 +110,12 @@ interface IFeedObject {
     type: string;
 }
 
-interface IResultItem {
-    value: IResultValue[];
+interface ISolution {
+    title: string;
+    success: number;
+    fail: number;
+    total: number;
+    failDetail: string[];
 }
 
 interface IResultValue {
@@ -129,6 +137,7 @@ readFeeds("Feeds.xml").then(async (feedObjects: IFeedObject[]) => {
     // 成功 | 失败执行
     let successCount = 0;
     let failCount = 0;
+    const solution = [];
     allResult.forEach(item => {
         if (item.status === 'fulfilled') {
             successCount++;
@@ -151,7 +160,6 @@ readFeeds("Feeds.xml").then(async (feedObjects: IFeedObject[]) => {
     })
     console.log(success('执行结果：\n'));
     console.log(`成功：${successCount}，失败：${failCount}，总计：${total}`);
-
     console.log('=====================');
     await dataSource.destroy();
 })
