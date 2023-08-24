@@ -1,8 +1,8 @@
 // subscription.entity.js
 
-const { EntitySchema } = require('typeorm');
+import { EntitySchema } from 'typeorm';
 
-const SubscriptionEntity = new EntitySchema({
+export const SubscriptionEntity = new EntitySchema({
     name: 'Subscription',
 
     columns: {
@@ -27,5 +27,3 @@ const SubscriptionEntity = new EntitySchema({
         },
     },
 });
-
-module.exports = SubscriptionEntity;

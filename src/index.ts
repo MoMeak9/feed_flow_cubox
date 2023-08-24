@@ -1,4 +1,10 @@
 import Parser from "rss-parser";
+import dotenv from 'dotenv';
+import * as path from "path";
+
+dotenv.config({
+    path: path.resolve(process.cwd(), '.env')
+});
 
 const parser = new Parser({
     defaultRSS: 1.0,
@@ -6,12 +12,17 @@ const parser = new Parser({
 });
 
 // 数据库服务
-import {SubscriptionService, dataSource} from './DB/subscription.service';
+import {SubscriptionService, dataSource} from './DB/subscription.service.ts';
 const subscriptionService = new SubscriptionService();
 
 
 // cubox链接
-const cuboxUrl = 'https://cubox.pro/c/api/save/dpsle366u15dhu'
+const cuboxUrl = process.env.CUTBOX_URL
+if (!cuboxUrl) {
+    console.error('CUTBOX_URL is not set');
+    console.log('Please set CUTBOX_URL in .env file',process.env)
+    process.exit(1);
+}
 
 interface IFeedContent {
     xmlUrl: string;
@@ -36,8 +47,8 @@ async function getFeedContent({xmlUrl, title, category, type}: IFeedContent) {
         });
         const createPromises = feedContents.map(async (content) => {
             const entity = {
-                title: content.title,
-                link: content.content,
+                title: content.title || '',
+                link: content.content || '',
             }
             const existItem = await subscriptionService.findByTitleAndLink(entity);
             if (!existItem) {
@@ -49,7 +60,7 @@ async function getFeedContent({xmlUrl, title, category, type}: IFeedContent) {
                         console.log('cubox error:\n', resJson);
                         return Promise.reject('cubox error');
                     }
-                    return subscriptionService.create({
+                    return subscriptionService.create(<IRssContent>{
                         title: content.title?.toString(),
                         link: content.content,
                     });
@@ -68,7 +79,7 @@ async function getFeedContent({xmlUrl, title, category, type}: IFeedContent) {
     }
 }
 
-interface IRssContent {
+export interface IRssContent {
     title: string;
     link: string;
 }
@@ -83,7 +94,7 @@ const saveContent = async (content: IRssContent) => {
     });
 }
 
-import readFeeds from './readFeeds'
+import readFeeds from './readFeeds.ts'
 
 interface IFeedObject {
     title:string;

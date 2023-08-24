@@ -4,6 +4,7 @@
   "description": "基于cubox开放api的自动化rss订阅脚本",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ./src/index.ts",
     "watch": "tsc --noEmit && rollup -c -w",
     "build": "tsc --noEmit --noEmitOnError && rollup -c",
     "commit": "git add . && git-cz && git push",
@@ -37,15 +38,15 @@
     "rollup": "^3.28.0",
     "ts-node": "^10.9.1",
     "tslib": "^2.6.1",
-    "typescript": "^5.1.6"
-  },
-  "dependencies": {
+    "typescript": "^5.1.6",
+    "xml-reader": "^2.4.3",
     "dotenv": "^16.1.4",
     "mysql": "^2.18.1",
     "node-fetch": "^3.3.1",
-    "opml": "^0.5.1",
+    "opml": "^0.5.1"
+  },
+  "dependencies": {
     "rss-parser": "^3.13.0",
-    "typeorm": "^0.3.16",
-    "xml-reader": "^2.4.3"
+    "typeorm": "^0.3.16"
   }
 }

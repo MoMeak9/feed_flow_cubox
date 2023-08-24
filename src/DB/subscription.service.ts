@@ -1,6 +1,12 @@
 import typeorm from 'typeorm'
-require('dotenv').config({
-    path: '../../.env'
+import {SubscriptionEntity} from './subscription.entity.ts'
+
+import {IRssContent} from '../index'
+import dotenv from "dotenv";
+import path from "path";
+
+dotenv.config({
+    path: path.resolve(process.cwd(), '.env')
 });
 
 export const dataSource = new typeorm.DataSource({
@@ -9,7 +15,7 @@ export const dataSource = new typeorm.DataSource({
     synchronize: true,
     logging: false,
     entities: [
-        require('./subscription.entity'),
+        SubscriptionEntity
     ],
     migrations: [],
     subscribers: [],
@@ -24,14 +30,14 @@ export class SubscriptionService {
         this.repository = dataSource.getRepository("Subscription");
     }
 
-    async create({title, link}) {
+    async create({title, link}:IRssContent) {
         return await this.repository.save({
             title,
             link,
         });
     }
 
-    async findByTitleAndLink({title, link}) {
+    async findByTitleAndLink({title, link}:IRssContent) {
         return await this.repository.findOne({
             where: {
                 title,

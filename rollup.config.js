@@ -1,5 +1,5 @@
 import typescript from '@rollup/plugin-typescript';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 
@@ -11,17 +11,25 @@ export default {
             declaration: true,
             declarationDir: 'dist/types',
         }),
-        nodeResolve({
+        resolve({
             preferBuiltins: true,
+
         }),
         commonjs(),
         json(),
     ],
+    watch: {
+        include: 'src/**',
+    },
     output: [
         {
             file: 'dist/index.cjs',
             format: 'cjs',
             sourcemap: true,
         },
+    ],
+    external: [
+        'xmlbuilder',
+        'typeorm'
     ],
 };

@@ -1,6 +1,7 @@
 import fs from 'fs'
 
-const XmlReader = require('xml-reader');
+// @ts-ignore
+import XmlReader from 'xml-reader'
 const readFeeds = (path: string) => {
     const reader = XmlReader.create({stream: true});
     return new Promise((resolve, reject) => {
