@@ -23,8 +23,8 @@ export default {
     },
     output: [
         {
-            file: 'dist/index.cjs',
-            format: 'cjs',
+            dir: 'dist',
+            format: 'esm',
             sourcemap: true,
         },
     ],

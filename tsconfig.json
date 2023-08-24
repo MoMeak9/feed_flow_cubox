@@ -15,7 +15,10 @@
         "allowImportingTsExtensions": true,
     },
     "ts-node": {
+        "transpileOnly": true,
+        "files": true,
         "esm": true
     },
-    "lib": ["esnext"]
+    "lib": ["esnext"],
+    "include": ["src/**/*"]
 }

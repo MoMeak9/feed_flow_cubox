@@ -1,6 +1,7 @@
 import Parser from "rss-parser";
 import dotenv from 'dotenv';
 import * as path from "path";
+import fetch from "node-fetch";
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
@@ -55,7 +56,7 @@ async function getFeedContent({xmlUrl, title, category, type}: IFeedContent) {
                 const res = await saveContent(content as any);
                 // 获取响应信息
                 try {
-                    const resJson = await res.json();
+                    const resJson = await res.json() as any;
                     if (resJson.code === -3030) {
                         console.log('cubox error:\n', resJson);
                         return Promise.reject('cubox error');
