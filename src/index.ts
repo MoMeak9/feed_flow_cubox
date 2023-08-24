@@ -2,13 +2,14 @@ import Parser from "rss-parser";
 import dotenv from 'dotenv';
 import * as path from "path";
 import fetch from "node-fetch";
+import {error, success} from "./log.ts";
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
 
 const parser = new Parser({
-    defaultRSS: 1.0,
+    defaultRSS: 2.0,
     timeout: 10000,
 });
 
@@ -32,10 +33,10 @@ interface IFeedContent {
     type: string;
 }
 
-async function getFeedContent({xmlUrl, title, category, type}: IFeedContent) {
+async function getFeedContent({xmlUrl, title, category, type}: IFeedContent): Promise<(IResultValue | string)[]> {
     try {
         const feed = await parser.parseURL(xmlUrl);
-        console.log(feed.title);
+        console.log(success('开始获取订阅：'), feed.title || '未命名');
         const feedContents = feed.items.map(item => {
             return {
                 type: 'url',
@@ -46,7 +47,7 @@ async function getFeedContent({xmlUrl, title, category, type}: IFeedContent) {
                 folder: "RSS",
             }
         });
-        const createPromises = feedContents.map(async (content) => {
+        const createPromises = feedContents.map(async (content): Promise<IResultValue | string> => {
             const entity = {
                 title: content.title || '',
                 link: content.content || '',
@@ -55,28 +56,29 @@ async function getFeedContent({xmlUrl, title, category, type}: IFeedContent) {
             if (!existItem) {
                 const res = await saveContent(content as any);
                 // 获取响应信息
-                try {
-                    const resJson = await res.json() as any;
-                    if (resJson.code === -3030) {
-                        console.log('cubox error:\n', resJson);
-                        return Promise.reject('cubox error');
-                    }
-                    return subscriptionService.create(<IRssContent>{
-                        title: content.title?.toString(),
-                        link: content.content,
-                    });
-                } catch (error) {
-                    console.error(`${title} Error:`, error);
-                    return Promise.reject('cubox error');
+                const resJson = await res.json() as any;
+                if (resJson.code === -3030) {
+                    throw new Error('Cubox error：' + resJson.message);
                 }
+                return subscriptionService.create(<IRssContent>{
+                    title: content.title?.toString(),
+                    link: content.content,
+                });
             } else {
-                return Promise.resolve('exist');
+                return Promise.resolve({
+                    status: 0,
+                    msg: '已经录入',
+                });
             }
         })
-        const result = await Promise.all(createPromises);
-        console.log(result)
-    } catch (error) {
-        console.error(`${title} Error:`, error);
+
+
+        return await Promise.all(createPromises);
+    } catch (e) {
+        console.log('=====================');
+        console.error(error(`${title} Error:\n`), e.message);
+        console.log('=====================');
+        return Promise.reject('Error' + e.message);
     }
 }
 
@@ -98,11 +100,21 @@ const saveContent = async (content: IRssContent) => {
 import readFeeds from './readFeeds.ts'
 
 interface IFeedObject {
-    title:string;
-    xmlUrl:string;
-    category:string;
-    type:string;
+    title: string;
+    xmlUrl: string;
+    category: string;
+    type: string;
 }
+
+interface IResultItem {
+    value: IResultValue[];
+}
+
+interface IResultValue {
+    status: number;
+    msg: string;
+}
+
 // @ts-ignore
 readFeeds("Feeds.xml").then(async (feedObjects: IFeedObject[]) => {
     const filterResult = feedObjects.filter(item => {
@@ -110,7 +122,37 @@ readFeeds("Feeds.xml").then(async (feedObjects: IFeedObject[]) => {
     })
 
     await dataSource.initialize();
-    await Promise.allSettled(filterResult.map(obj => getFeedContent(obj)))
+    const allResult = await Promise.allSettled(filterResult.map(async obj => await getFeedContent(obj)))
+    console.log('=====================');
+    // 总计执行
+    const total = allResult.length
+    // 成功 | 失败执行
+    let successCount = 0;
+    let failCount = 0;
+    allResult.forEach(item => {
+        if (item.status === 'fulfilled') {
+            successCount++;
+        } else {
+            failCount++;
+        }
+        // 执行结果
+        if (item.status !== "rejected") {
+            // 成功 ｜ 失败数据
+            let subSuccessCount = 0;
+            let subFailCount = 0;
+            item.value.forEach(subItem => {
+                if (typeof subItem !== 'string' && subItem.status === 0) {
+                    subSuccessCount++;
+                } else {
+                    subFailCount++;
+                }
+            })
+        }
+    })
+    console.log(success('执行结果：\n'));
+    console.log(`成功：${successCount}，失败：${failCount}，总计：${total}`);
+
+    console.log('=====================');
     await dataSource.destroy();
 })
 
