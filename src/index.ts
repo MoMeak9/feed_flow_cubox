@@ -33,7 +33,10 @@ interface IFeedContent {
     type: string;
 }
 
-async function getFeedContent({xmlUrl, title, category, type}: IFeedContent): Promise<(IResultValue | string)[]> {
+async function getFeedContent({xmlUrl, title, category, type}: IFeedContent): Promise<{
+    title: string;
+    content: Awaited<IResultValue | string>[]
+}> {
     try {
         const feed = await parser.parseURL(xmlUrl);
         console.log(success('开始获取订阅：'), feed.title || '未命名');
@@ -67,13 +70,16 @@ async function getFeedContent({xmlUrl, title, category, type}: IFeedContent): Pr
             } else {
                 return Promise.resolve({
                     status: 0,
-                    msg: '已经录入',
+                    msg: '已录入',
                 });
             }
         })
 
 
-        return await Promise.all(createPromises);
+        return {
+            title,
+            content: await Promise.all(createPromises)
+        };
     } catch (e) {
         console.log('=====================');
         console.error(error(`${title} Error:\n`), e.message);
@@ -110,12 +116,13 @@ interface IFeedObject {
     type: string;
 }
 
-interface ISolution {
+interface ISubSolutionItem {
     title: string;
-    success: number;
-    fail: number;
+    subNewCount: number;
+    subSuccessCount: number;
+    subFailCount: number;
     total: number;
-    failDetail: string[];
+    items: any[]
 }
 
 interface IResultValue {
@@ -135,31 +142,46 @@ readFeeds("Feeds.xml").then(async (feedObjects: IFeedObject[]) => {
     // 总计执行
     const total = allResult.length
     // 成功 | 失败执行
-    let successCount = 0;
-    let failCount = 0;
-    const solution = [];
-    allResult.forEach(item => {
+    const solution = {
+        successCount: 0,
+        failCount: 0,
+        subSolutionItem: [] as ISubSolutionItem[]
+    }
+    allResult.forEach((item, _,array) => {
+        const subSolution = {
+            title: '',
+            subNewCount: 0,
+            subSuccessCount: 0,
+            subFailCount: 0,
+            total: array.length,
+            items: [] as any[]
+        };
         if (item.status === 'fulfilled') {
-            successCount++;
+            solution.successCount++;
         } else {
-            failCount++;
+            solution.failCount++;
         }
         // 执行结果
         if (item.status !== "rejected") {
+            subSolution.title = item.value.title
             // 成功 ｜ 失败数据
-            let subSuccessCount = 0;
-            let subFailCount = 0;
-            item.value.forEach(subItem => {
-                if (typeof subItem !== 'string' && subItem.status === 0) {
-                    subSuccessCount++;
+            item.value.content.forEach(subItem => {
+                if (typeof subItem !== 'string' && !subItem.status) {
+                    subItem.msg !== '已录入' && subSolution.subNewCount++;
+                    subSolution.subSuccessCount++;
                 } else {
-                    subFailCount++;
+                    subSolution.subFailCount++;
                 }
+                subSolution.items.push(subItem)
             })
         }
+        solution.subSolutionItem.push(<ISubSolutionItem>subSolution)
     })
-    console.log(success('执行结果：\n'));
-    console.log(`成功：${successCount}，失败：${failCount}，总计：${total}`);
+    console.log(success('执行结果：'));
+    console.log(`成功：${solution.successCount}，失败：${solution.failCount}，总计：${total}`);
+    solution.subSolutionItem.forEach(item => {
+        console.log(item.title,'：', item.subNewCount, item.subSuccessCount, item.subFailCount)
+    })
     console.log('=====================');
     await dataSource.destroy();
 })
