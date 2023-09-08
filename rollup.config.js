@@ -30,6 +30,7 @@ export default {
     ],
     external: [
         'xmlbuilder',
-        'typeorm'
+        'typeorm',
+        'chalk'
     ],
 };
